@@ -1,5 +1,4 @@
 const url = "https://url-shortner10.p.rapidapi.com/lits.rocks/";
-const localStorageKey = "URLshortdata"
 const options = {
     method: "POST",
     headers: {
@@ -11,32 +10,56 @@ const options = {
         url: "",
     },
 };
-const longURL = document.getElementById("longURL");
-const outputURL = document.getElementById("outputBox")
-const URL_Container = [];
 
+const longURL = document.getElementById("longURL");
+const outputURL = document.getElementById("outputBox");
+const UL = document.getElementById("mainUL");
+
+const storageKey = "URLshortdata";
+let urlContainer = JSON.parse(localStorage.getItem(storageKey)) || [];
 
 async function urlShotener() {
     try {
         const response = await fetch(url, options);
         const result = await response.json();
-        outputURL.innerText = result.shortUrl
-        console.log(result);
+        outputURL.innerText = result.shortUrl; // Output to main screen
+
+        urlContainer.push({
+            id: new Date().getTime().toString(),
+            URL: result.shortUrl,
+        });
     } catch (error) {
         console.error(error);
     }
 }
 
 const savaToLocalStorage = () => {
-    // Some task take the input url then move with it option.body.url = input url the perfrom tasks
-    if(longURL.value === ""){
-        outputURL.innerText = "Please enter a URL!"
-        return
+    if (longURL.value === "") {
+        outputURL.innerText = "Please enter a URL!";
+        return;
     }
     options.body.url = longURL.value;
-
-    urlShotener()
+    urlShotener(); // push item itno array
+    localStorage.setItem(storageKey, JSON.stringify(urlContainer));
+    render(); // render the output after the modification
 };
 
+const render = () => {
+    const li = document.createElement("li");
+    const list = JSON.parse(localStorage.getItem(storageKey));
 
-const deleteFromLocalStorage = () => {};
+    //main rendering
+    if (list.length !== 0) {
+        UL.innerHTML = "";
+        list.map((item) => {
+            li.appendChild(document.createTextNode(item.URL));
+            UL.appendChild(li);
+        });
+    }
+};
+
+const clearHistory = () => {
+    UL.innerHTML = "";
+    urlContainer = []; //clear the array
+    localStorage.clear(); // delete from local storage
+};
